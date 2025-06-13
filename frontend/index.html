@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FLAMES Spam Tool - Relationship Calculator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #121212, #1f2937);
+    color: #e0e7ff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+  }
+  main {
+    background: rgba(31, 41, 55, 0.9);
+    padding: 32px;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 12px 32px rgba(124, 58, 237, 0.7);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    user-select: none;
+  }
+  h1 {
+    font-weight: 700;
+    font-size: 2.2rem;
+    margin: 0;
+    text-align: center;
+    background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  h2 {
+    margin-top: 0;
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #a5b4fc;
+  }
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: #cbd5e1;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1.5px solid #374151;
+    background-color: #1e293b;
+    color: #e0e7ff;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  input[type="text"]:focus {
+    border-color: #8b5cf6;
+    outline: none;
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.7);
+    background-color: #2c3a5a;
+  }
+  button {
+    background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    color: white;
+    border: none;
+    padding: 14px 0;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    user-select: none;
+    width: 100%;
+  }
+  button:hover, button:focus {
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+    outline: none;
+  }
+  .result-container {
+    background: rgba(39, 39, 42, 0.85);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: #e0e7ff;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+    min-height: 64px;
+    user-select: text;
+  }
+  .error-message {
+    color: #fb7185;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin: 0;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>FLAMES Spam Tool</h1>
+  <section id="relationshipSection" aria-label="Relationship Input Section">
+    <h2>Enter your name and your crush's name</h2>
+    <form id="relationshipForm" autocomplete="off" aria-live="polite">
+      <div>
+        <label for="yourName">Your Name</label>
+        <input type="text" id="yourName" name="yourName" placeholder="Enter your name" required />
+      </div>
+      <div>
+        <label for="crushName">Crush's Name</label>
+        <input type="text" id="crushName" name="crushName" placeholder="Enter crush's name" required />
+      </div>
+      <button type="submit">Calculate Relationship</button>
+    </form>
+    <div id="result" class="result-container" aria-live="polite" aria-atomic="true"></div>
+  </section>
+</main>
+
+<script>
+(function() {
+  const relationshipForm = document.getElementById('relationshipForm');
+  const yourNameInput = document.getElementById('yourName');
+  const crushNameInput = document.getElementById('crushName');
+  const resultDiv = document.getElementById('result');
+
+  // FLAMES calculation logic
+  function computeFlames(name1, name2) {
+    let a = name1.toLowerCase().replace(/\s+/g, '');
+    let b = name2.toLowerCase().replace(/\s+/g, '');
+
+    for (let char of a) {
+      if (b.includes(char)) {
+        b = b.replace(char, '');
+        a = a.replace(char, '');
+      }
+    }
+    let count = a.length + b.length;
+    if (count === 0) {
+      return { text: "Perfect Match" };
+    }
+    const flamesArr = ['Friends', 'Love', 'Affection', 'Marriage', 'Enemy', 'Siblings'];
+
+    let flames = [...flamesArr];
+    let idx = 0;
+    while (flames.length > 1) {
+      idx = (idx + count - 1) % flames.length;
+      flames.splice(idx, 1);
+    }
+    return { text: flames[0] };
+  }
+
+  // On relationship form submit - calculate flames and save submission
+  relationshipForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const yourName = yourNameInput.value.trim();
+    const crushName = crushNameInput.value.trim();
+    if (!yourName || !crushName) return;
+
+    const flamesResult = computeFlames(yourName, crushName);
+    resultDiv.textContent = `"${yourName}" and "${crushName}" Relationship: ${flamesResult.text}`;
+
+    // Send submission to backend
+    const sharerId = new URLSearchParams(window.location.search).get('sharer');
+    const submissionData = {
+      sharerId,
+      yourName,
+      crushName,
+      flamesResult: flamesResult.text
+    };
+
+    try {
+      const response = await fetch('http://localhost:3000/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(submissionData)
+      });
+      if (!response.ok) {
+        throw new Error('Failed to save submission');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      resultDiv.textContent = 'Error saving submission. Please try again.';
+    }
+
+    // Reset inputs
+    relationshipForm.reset();
+    yourNameInput.focus();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "yourID": [
+    {
+      "yourName": "agathiiyan",
+      "crushName": "agathiyan",
+      "flamesResult": "Siblings",
+      "timestamp": "2025-06-13T05:50:52.219Z"
+    }
+  ],
+  "testuser": [
+    {
+      "yourName": "hi",
+      "crushName": "hi",
+      "flamesResult": "Perfect Match",
+      "timestamp": "2025-06-13T05:52:43.157Z"
+    },
+    {
+      "yourName": "bike",
+      "crushName": "car",
+      "flamesResult": "Enemy",
+      "timestamp": "2025-06-13T06:00:42.867Z"
+    }
+  ]
+}
